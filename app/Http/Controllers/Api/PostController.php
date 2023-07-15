@@ -11,14 +11,29 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try
         {
+            $query = Post::query();
+            $perPage = 2;
+            $page = $request->input("page", 1);
+            $search = $request->input("search");
+
+            if($search)
+            {
+                $query->whereRaw("titre LIKE '%". $search . "%'");
+            }
+
+            $total = $query->count();
+            $result = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
+
             return response()->json([
                 'status' => 200,
                 'message' => "Post récuperer avec success",
-                'data' => Post::all()
+                'current_page' => $page,
+                'last_page' => ceil($total / $perPage),
+                'items' => $result
             ]);
         }catch(Exception $e)
         {
