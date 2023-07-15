@@ -48,6 +48,7 @@ class PostController extends Controller
             $post = new Post();
             $post->titre = $request->titre;
             $post->description = $request->description;
+            $post->user_id = auth()->user()->id;
             $post->save();
 
             return response()->json([
@@ -67,7 +68,15 @@ class PostController extends Controller
         {
             $post->titre = $request->titre;
             $post->description = $request->description;
-            $post->save();
+            if($post->user_id == auth()->user()->id)
+            {
+                $post->save();
+            }else{
+                return response()->json([
+                    'status' => 422,
+                    'message' => "Vous n'etes pas l'auteur de ce post",
+                ]);
+            }
 
             return response()->json([
                 'status' => 200,
@@ -84,7 +93,15 @@ class PostController extends Controller
     {
         try
         {
-            $post->delete();
+            if($post->user_id == auth()->user()->id)
+            {
+                $post->delete();
+            }else{
+                return response()->json([
+                    'status' => 422,
+                    'message' => "Vous n'etes pas l'auteur de ce post. Suppression non authorisé.",
+                ]);
+            }
 
             return response()->json([
                 'status' => 200,
